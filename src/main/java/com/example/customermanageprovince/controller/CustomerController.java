@@ -6,11 +6,10 @@ import com.example.customermanageprovince.model.Province;
 import com.example.customermanageprovince.service.customer.CustomerService;
 import com.example.customermanageprovince.service.province.ProvinceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Optional;
@@ -44,8 +43,13 @@ public class CustomerController {
     }
 
     @GetMapping("/customers")
-    public ModelAndView listCustomers() {
-        Iterable<Customer> customers = customerService.findAll();
+    public ModelAndView listCustomers(@RequestParam("search") Optional<String> search, Pageable pageable){
+        Page<Customer> customers;
+        if (search.isPresent()) {
+            customers = customerService.findAllByFirstNameContaining(search.get(), pageable); //get(): lấy thằng search
+        } else {
+            customers = customerService.findAll(pageable);
+        }
         ModelAndView modelAndView = new ModelAndView("/customer/list");
         modelAndView.addObject("customers", customers);
         return modelAndView;
